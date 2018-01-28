@@ -1,0 +1,31 @@
+# R-codes for Ch2 
+setwd("F:\\Jiang-Files\\courses\\STAT7133-8133\\59865-0132326809_data")
+
+##########  Compute eigenvalues and eigenvectors in R
+x=matrix(c(2,1,1,4),2,2) # a simple 2-by-2 matrix.
+x
+
+m1=eigen(x)
+names(m1)
+
+m1$values
+m1$vectors
+
+# Verification
+ ev=m1$values
+vec=m1$vectors
+y=x%*%vec
+ y
+y1=vec%*%diag(ev)
+ y1
+###########################################
+
+
+
+
+
+
+
+
+
+

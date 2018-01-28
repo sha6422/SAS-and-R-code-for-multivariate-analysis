@@ -1,0 +1,95 @@
+/****************************************************************************/
+/* SAS Program CH1EX9.SAS                                                   */
+/* Exploration and summary statistics for the Breakfast Cereal Data         */
+/* Written by Tom Short - last modified 5/25/99                             */
+/* Based on Chapter 1 Exercise 9 from                                       */
+/* Johnson, D. _Applied Multivatiate Methods for Data Analysts_             */
+/****************************************************************************/
+DM 'out;clear;log;clear;';
+OPTIONS LS=80 NONUMBER;
+
+***************************************************************************
+* The next chunk of code is taken from the disk that accompanies the text *
+***************************************************************************;
+DATA CEREAL;
+ INPUT #1 BRAND $ 1-20 SERVING #2 CALORIES FAT_CAL TOT_FAT SAT_FAT CHOL SODIUM
+  POTAS TOT_CARB DIT_FIB SUGARS OTH_CARB PROTEIN VIT_A VIT_C CALCIUM
+  IRON VIT_D THIAMIN RIBO NIACIN VIT_B6 FOLATE VIT_B12 PHOS MAG ZINC COPPER;
+CARDS;
+Grape-nuts           58
+200 10 1 0 0 350 160 47  5  7 35 6 15  0 2 45 10 25 25 25 25 25 25 15 15  8 10
+Raisin Bran          55
+170 10 1 0 0 310 400 43  7 18 18 4 15  0 4 25 10 25 25 25 25 25 25 20 20 25 10
+Golden Grahams       30
+120 10 1 0 0 280  55 25  1 11 13 1 15 25 0 25  0 25 25 25 25 25  .  4  2 25  .
+Bran Flakes          30
+100 5 .5 0 0 220 190 24  5  6 13 3 15  0 0 45 10 25 25 25 25 25 25 15 15 10 10
+All.Bran             28.4
+ 50 0  0 0 0 140 330 22 14  0  8 4 15 25 2 25 10 25 25 25 25 25 25 25 30 25 15
+Rice Krispies        30
+110 0  0 0 0 320  35 26  1  3 22 2 15 25 0 10 10 25 25 25 25 25  .  4  2  4  2
+Multi-Grain Cheerios 30
+110 10 1 0 0 240 100 24  3  6 15 3 25 25 4 45 10 25 25 25 25 25  . 10  6  4  2
+Shredded Wheat       49
+170 5 .5 0 0   0 200 41  5  0 36 5  0  0 2  8  0  8  2 15  .  .  . 20 15  8  8
+Wheaties             30
+110 10 1 0 0 220 110 24  3  4 17 3 25 25 4 45 10 25 25 25 25 25  . 10  8  4  4
+Frosted Flakes       32
+120  0 0 0 0 220   . 29  1 13 15 2 15 25 0 30 10 25 25 25 25 25  .  .  .  .  .
+Special K            21
+ 80 0  0 0 0 170   . 15  1  2 12 4 10 15 0 30  8 20 20 20 20 15  .  4  4  15 4
+Crispix              18
+ 70 0  0 0 0 140   . 15  0  2 13 1  8 10 0  4  6 10 10 10 10 10  .  .  .   4 .
+Froot Loops          27
+100 5  1 0 0 135   . 23  1 13  9 1 10 20 0 20 10 20 20 20 20 20  .  .  .  20 .
+Corn Pops            28
+110 0  0 0 0  90   . 26  1 12 13 1 10 20 0  8 10 20 20 20 20 20  .  .  .   8 .
+Corn Flakes          21
+ 80 0  0 0 0 230   . 18  1  1 16 2 10 15 0 30  8 15 15 15 15 15  .  .  .  .  .
+Frosted Mini.Wheats  35
+120 5 .5 0 0   0   . 29  4  8 15 3  0  0 0 50  . 15 15 15 15 15 15 10  8  6  4
+Fruit Granola        55
+210 25 2.5 0 0 200 . 44  3 18 23 4  0  0 2  6  .  8  2  4  .  .  . 15  8  4  4
+;
+* PROC PRINT; RUN;
+
+***************************************************************************;
+
+TITLE 'Nutritional Data for 17 Brands of Breakfast Cereal - from Johnson';
+
+PROC PLOT DATA=cereal;
+        PLOT tot_fat*fat_cal='*';
+        TITLE2 'Plot of Total Fat vs. Calories from Fat';
+RUN;
+
+PROC PLOT DATA=cereal;
+        PLOT tot_fat*calories='*';
+        TITLE2 'Plot of Total Fat vs. Calories';
+RUN;
+
+PROC CORR DATA=cereal COV;
+        VAR sodium potas tot_carb;
+        TITLE2 'Summary Statistics for Sodium, Potassium, and Total Carbohydrates';
+RUN;
+
+DATA cereal;
+        SET cereal;
+        zsodium=sodium;
+        zpotas=potas;
+        ztotcarb=tot_carb;
+
+PROC STANDARD DATA=cereal MEAN=0 STD=1 OUT=newcer;
+        VAR zsodium zpotas ztotcarb;
+        TITLE2 'Standardized Values for Sodium, Potassium, and Total Carbohydrates';
+RUN;
+
+PROC PRINT DATA=newcer;
+        VAR sodium zsodium potas zpotas tot_carb ztotcarb;
+RUN;
+
+PROC CORR DATA=newcer COV;
+        VAR zsodium zpotas ztotcarb;
+        TITLE2 'Statistics for Standardized Sodium, Potassium, and Total Carbohydrates';
+RUN;
+
+/*** END ***/;

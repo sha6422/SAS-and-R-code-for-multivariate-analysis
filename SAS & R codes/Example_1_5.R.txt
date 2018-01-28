@@ -1,0 +1,15 @@
+#The paper-quality measurements of Table 1.2, page 15.
+setwd("F:\\Jiang-Files\\courses\\STAT7133-8133\\59865-0132326809_data")
+y=read.table("T1-2.dat")
+colnames(y) <- c("density","mach-dir","cross-dir")
+y
+colMeans(y)
+
+
+var(y) # The command ``cov'' works too.
+
+apply(y,2,var)
+cor(y)
+
+plot(y) # Pairwise-scatter plot. See Figure 1 for demonstration.
+title(sub="Pairwise-scatter plot")

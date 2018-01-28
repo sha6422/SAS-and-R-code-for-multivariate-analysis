@@ -1,0 +1,26 @@
+ ## Input the data
+ x1 <- c(1,2,3,4,5,6,7,8,9,11)
+ x2 <- c(18.95,19.00,17.95,15.54,14.00,12.95,8.94,7.49,6.00,3.99)
+
+ ## Define a layout. Here we divide the plotting area to four  subareas. 
+    #For details, read the help file for function "layout".
+ nf <- layout(matrix(c(3,1,0,2),2,2,byrow=TRUE), c(1,5), c(5,1), TRUE)
+ ## Show the layout which give an idea about how the plots will 
+    #distribute before plotting them.
+ layout.show(nf)
+
+ ## Plot scatter plot first.
+ ## par(mar = c()) is used to leave proper margins around plots.
+ par(mar=c(5,4,2,2))
+ plot(x1, x2, xlim=c(0,12), ylim=c(0,20), xlab="x1, Age",
+    ylab="x2, Prices, thousands of dollars")
+
+ ## Then plot dot diagram under the scatter plot, and dot 
+    #diagram to the left of it.
+ ## Some setting of axis is just to make the plots look better.
+ par(mar=c(3,4,2,2))
+ plot(x1, rep(1,10), xlim=c(0,12), ylim=c(1,1), xlab="", ylab="",axes = F)
+ axis(side = 3,at = seq(from = 0, to = 12, by = 2))
+ par(mar=c(5,3,2,2))
+ plot(rep(1,10), x2, xlim=c(1,1), ylim=c(0,20), xlab="", ylab="",axes = F)
+ axis(side = 4,at = seq(from = 0, to = 20, by = 5))

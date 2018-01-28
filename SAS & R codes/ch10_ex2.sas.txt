@@ -1,0 +1,196 @@
+/****************************************************************************/
+/* SAS Program ch10_ex2.SAS                                                 */
+/* Hotelling T^2 for hypothetical longitudinal data from Johnson            */
+/* Johnson Chapter 10, Exercise 2                                           */
+/*                                                                          */
+/* Written by Tom Short - last modified 7/20/99                             */
+/****************************************************************************/
+DM 'out;clear;log;clear;';
+OPTIONS LS=80 NONUMBER;
+
+DATA ch10_ex2;
+        INPUT group patient t1-t5;
+
+CARDS;
+0 1 11 18 15 18 15
+0 2 33 27 31 21 17
+0 3 20 28 27 23 29
+1 4 28 26 18 18 18
+1 5 22 23 22 16 10
+1 6 20 22 16 15 12
+1 7 24 27 22 21 24
+1 8 30 26 30 24 20
+;
+
+TITLE1 'Hypothetical Longitudinal Data from Johnson Chapter 10 - Exercise 2';
+
+PROC PRINT DATA=ch10_ex2;
+        VAR group patient t1-t5;
+RUN;
+
+PROC MEANS DATA=ch10_ex2 NOPRINT;
+        VAR t1-t5;
+        OUTPUT OUT=means MEAN=time05 time10 time15 time20 time25;
+RUN;
+
+DATA means;
+        SET means;
+        DROP _TYPE_ _FREQ_;
+
+PROC TRANSPOSE DATA=means OUT=means;
+        VAR time05 time10 time15 time20 time25;
+RUN;
+
+DATA means;
+        SET means;
+        KEEP time mean;
+        time=_NAME_;
+        mean=COL1;
+
+PROC PLOT DATA=means;
+        PLOT mean*time='*';
+        TITLE2 'Plot of Means by Time vs. Time - Looking for Linear Trend';
+RUN;
+
+DATA means;
+        SET means;
+        IF time='TIME05' THEN timex=5;
+        IF time='TIME10' THEN timex=10;
+        IF time='TIME15' THEN timex=15;
+        IF time='TIME20' THEN timex=20;
+        IF time='TIME25' THEN timex=25;
+
+PROC REG DATA=means;
+        MODEL mean=timex;
+        TITLE2 'Simple Linear Regression of Mean at Each Time on Time';
+RUN;
+
+* Code from Johnson EX10_5.IML;
+
+DATA X; SET ch10_ex2; DROP group patient;
+
+PROC IML; RESET NOLOG;
+TITLE2 'Testing for the H-F Conditions.';
+
+ USE X; READ ALL INTO X;
+ N = NROW(X); P = NCOL(X);
+ PRINT "X = " X;
+ XBAR = (X[+,])`/N;
+SUMSQ = X`*X - N#XBAR*XBAR`;
+SIGHAT = SUMSQ/(N-1);
+PRINT, "XBAR = " XBAR, "SIGHAT =" SIGHAT;
+QQ=ORPOL(1:P,P-1);
+PP=QQ(|1:P,2:P|);
+SIGSTAR=PP`*SIGHAT*PP;
+PRINT, "SIGSTAR = " SIGSTAR;
+P=P-1;
+LAMDA = DET(SIGSTAR)/(((1/P)#TRACE(SIGSTAR))**P);
+M=N-1-(2#P#P+P+2)/(6#P);
+A=(P+1)#(P-1)#(P+2)#(2#P#P#P+6#P#P+3#P+2)/(288#P#P);
+F=P#(P+1)/2-1;
+Z=-M#LOG(LAMDA);
+PRINT, "Z = " Z;
+ALPHA=(1-PROBCHI(Z,F))+(A/(M#M))#(PROBCHI(Z,F)-PROBCHI(Z,F+4));
+PRINT, "LAMDA =" LAMDA, "ALPHA FOR H-F CONDITIONS = " ALPHA;
+PRINT /;
+TITLE2 'Hotelling''s Test of no time effect';
+
+P=P+1;
+     H = {1 -1  0  0  0,
+          1  0 -1  0  0,
+          1  0  0 -1  0,
+          1  0  0  0 -1};
+
+     SMALLH = {0 0 0 0}`;
+Q = NROW(H);
+PRINT, "H = " H, "SMALLH = " SMALLH;
+V = INV(H*SIGHAT*H`);
+T2 = N#(H*XBAR - SMALLH)`*V*(H*XBAR - SMALLH);
+F = (N - Q)#T2/(Q#(N - 1));
+DFN = Q;
+DFD = N - Q;
+ALPHA = 1 - PROBF(F,DFN,DFD);
+PRINT, "T2 = " T2, "F = " F, "DEGREES OF FREEDOM ARE" DFN DFD;
+PRINT, "ALPHA = " ALPHA;
+PRINT /;
+
+********************************;
+TITLE2 'A Test for Linear Trend';
+     H = {1 -2  1  0  0,
+          0  1 -2  1  0,
+          0  0  1 -2  1};
+
+     SMALLH = {0 0 0}`;
+Q = NROW(H);
+PRINT, "H = " H, "SMALLH = " SMALLH;
+V = INV(H*SIGHAT*H`);
+T2 = N#(H*XBAR - SMALLH)`*V*(H*XBAR - SMALLH);
+F = (N - Q)#T2/(Q#(N - 1));
+DFN = Q;
+DFD = N - Q;
+ALPHA = 1 - PROBF(F,DFN,DFD);
+PRINT, "T2 = " T2, "F = " F, "DEGREES OF FREEDOM ARE" DFN DFD;
+PRINT, "ALPHA = " ALPHA;
+PRINT /;
+
+********************************************************;
+TITLE2 'Parameter Estimates for the Slope and Intercept';
+     B = {1 5,
+          1 10,
+          1 15,
+          1 20,
+          1 25};
+
+V = INV(B`*INV(SIGHAT)*B);
+ahat = V*B`*INV(SIGHAT)*xbar;
+
+PRINT, "Alpha Hat (Coefficients) = " ahat;
+PRINT /;
+
+*************************************************;
+TITLE2 'Comparing Two Treatment Groups Over Time';
+
+DATA X1; SET ch10_ex2; IF group=0;DROP group patient;
+DATA X2; SET ch10_ex2; IF group=1;DROP group patient;
+ TITLE3 'IML Analyses from Johnson';
+PROC IML;
+RESET NOLOG;
+USE X1;
+READ ALL INTO X1;
+USE X2;
+READ ALL INTO X2 ;
+N1= NROW(X1);
+N2= NROW(X2);
+P= NCOL(X1);
+XBAR1=( X1[+,])`/N1;
+XBAR2=( X2[+,])`/N2;
+PRINT, "XBAR1 = " XBAR1, "XBAR2 = " XBAR2;
+SUMSQ1=X1`*X1-XBAR1*XBAR1`#N1;
+SUMSQ2=X2`*X2-XBAR2*XBAR2`#N2;
+SIGHAT1 = SUMSQ1/(N1-1);
+SIGHAT2 = SUMSQ2/(N2-1);
+
+SIGHAT=(SUMSQ1+SUMSQ2)/(N1+N2-2);
+PRINT, SIGHAT1,, SIGHAT2,, SIGHAT;
+
+ NU1=N1-1; NU2=N2-1; NU=NU1+NU2;
+
+CON=(N1#N2)/(N1+N2);
+
+C  = I(5);
+
+Q= NROW(C);
+PRINT/;
+PRINT, C;
+V = INV(C*SIGHAT*C`);
+U=C*(XBAR1-XBAR2);
+TSQ = CON#U`*V*U;
+F=(N1+N2-Q-1)#TSQ/(Q#(N1+N2-2));
+DF1=Q;
+DF2=N1+N2-Q-1;
+ALPHA = 1-PROBF(F,DF1,DF2);
+PRINT, TSQ, F, DF1, DF2, ALPHA;
+
+QUIT;
+
+/*** END ***/;

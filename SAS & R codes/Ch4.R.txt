@@ -1,0 +1,28 @@
+# R codes for Ch4
+
+setwd("F:\\Jiang-Files\\courses\\STAT7133-8133\\59865-0132326809_data")
+
+####### R commands create the normal QQ-plot
+x=rnorm(100)
+par(mfcol=c(2,1))
+hist(x)
+qqnorm(x)
+prob=(c(1:100)-0.5)/100
+z=qnorm(prob)
+y=sort(x)
+cor(y,z)
+
+###########  Example 4.10, p 180
+x=read.table("T4-1.DAT") # Load the data into R workspace
+x
+source("rqqchi2.r") # Compile the program
+qqchi2(x)
+
+
+
+
+
+
+
+
+

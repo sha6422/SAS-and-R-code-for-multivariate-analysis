@@ -1,0 +1,18 @@
+#prob6.1
+
+setwd("F:\\Jiang-Files\\courses\\STAT7133-8133\\59865-0132326809_data")
+eff.dat=read.table("T6-1.DAT")
+d=cbind(eff.dat$V1 - eff.dat$V3, eff.dat$V2 - eff.dat$V4)
+n=dim(d)[1]
+p=dim(d)[2]
+d_bar=matrix(colMeans(d), ncol=1)
+s=cov(d)
+
+library(ellipse)
+ce.c=sqrt((n-1)*p/(n-p)*qf(0.05, p, n-p, lower.tail = FALSE))
+ce=ellipse(s, centre=d_bar, t=ce.c/sqrt(n))
+
+plot(ce, type="l", main="95% Joint Confident Region", xlab="d1", ylab="d2")
+points(0,0, pch=20)
+
+# The result is consistent with the T^2 test
